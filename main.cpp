@@ -38,35 +38,29 @@ int main()
     bool hasKey = false;
 
     // ================= WALLS (BOUNDARY SYSTEM) =================
-
-    // TOP
     sf::RectangleShape wallTop({800.f, 20.f});
     wallTop.setPosition({0.f, 0.f});
 
-    // BOTTOM
     sf::RectangleShape wallBottom({800.f, 20.f});
     wallBottom.setPosition({0.f, 580.f});
 
-    // LEFT
     sf::RectangleShape wallLeft({20.f, 600.f});
     wallLeft.setPosition({0.f, 0.f});
 
-    // RIGHT WALL (3 PARTS)
     sf::RectangleShape wallRightTop({20.f, 200.f});
     wallRightTop.setPosition({780.f, 0.f});
 
-    sf::RectangleShape wallRightMiddle({20.f, 200.f}); // DOOR AREA
+    sf::RectangleShape wallRightMiddle({20.f, 200.f});
     wallRightMiddle.setPosition({780.f, 200.f});
 
     sf::RectangleShape wallRightBottom({20.f, 200.f});
     wallRightBottom.setPosition({780.f, 400.f});
 
-    // COLORS
     wallTop.setFillColor(sf::Color(100, 100, 100));
     wallBottom.setFillColor(sf::Color(100, 100, 100));
     wallLeft.setFillColor(sf::Color(100, 100, 100));
     wallRightTop.setFillColor(sf::Color(100, 100, 100));
-    wallRightMiddle.setFillColor(sf::Color(100, 100, 100)); // door color
+    wallRightMiddle.setFillColor(sf::Color(150, 50, 50));
     wallRightBottom.setFillColor(sf::Color(100, 100, 100));
 
     // ================= DOOR STATE =================
@@ -94,6 +88,11 @@ int main()
 
     sf::Text text(font);
     text.setCharacterSize(40);
+
+    // ================= TIMER TEXT =================
+    sf::Text timerText(font);
+    timerText.setCharacterSize(20);
+    timerText.setPosition({22.f, 22.f});
 
     // ================= TIMER =================
     sf::Clock clock;
@@ -146,42 +145,44 @@ int main()
         lightOn = !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E);
 
         // ================= PLAYER MOVEMENT =================
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) player.move({0.f, -speed});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) player.move({0.f, speed});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) player.move({-speed, 0.f});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) player.move({speed, 0.f});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+            player.move({0.f, -speed});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+            player.move({0.f, speed});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+            player.move({-speed, 0.f});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+            player.move({speed, 0.f});
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) player.move({0.f, -speed});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) player.move({0.f, speed});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) player.move({-speed, 0.f});
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) player.move({speed, 0.f});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+            player.move({0.f, -speed});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+            player.move({0.f, speed});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+            player.move({-speed, 0.f});
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+            player.move({speed, 0.f});
 
         // ================= DOOR LOGIC =================
         if (hasKey)
             doorOpen = true;
 
         // ================= WALL COLLISION =================
-
-        // TOP
         if (player.getGlobalBounds().findIntersection(wallTop.getGlobalBounds()).has_value())
             player.move({0.f, speed});
 
-        // BOTTOM
         if (player.getGlobalBounds().findIntersection(wallBottom.getGlobalBounds()).has_value())
             player.move({0.f, -speed});
 
-        // LEFT
         if (player.getGlobalBounds().findIntersection(wallLeft.getGlobalBounds()).has_value())
             player.move({speed, 0.f});
 
-        // RIGHT (TOP + BOTTOM always block)
         if (player.getGlobalBounds().findIntersection(wallRightTop.getGlobalBounds()).has_value())
             player.move({-speed, 0.f});
 
         if (player.getGlobalBounds().findIntersection(wallRightBottom.getGlobalBounds()).has_value())
             player.move({-speed, 0.f});
 
-        // RIGHT MIDDLE (DOOR BLOCK only when closed)
         if (!doorOpen)
         {
             if (player.getGlobalBounds().findIntersection(wallRightMiddle.getGlobalBounds()).has_value())
@@ -190,8 +191,10 @@ int main()
 
         // ================= GUARD MOVEMENT =================
         guard.move({moveRight ? guardSpeed : -guardSpeed, 0.f});
-        if (guard.getPosition().x > 700) moveRight = false;
-        if (guard.getPosition().x < 100) moveRight = true;
+        if (guard.getPosition().x > 700)
+            moveRight = false;
+        if (guard.getPosition().x < 100)
+            moveRight = true;
 
         // ================= GUARD COLLISION =================
         if (player.getGlobalBounds().findIntersection(guard.getGlobalBounds()).has_value() && lightOn)
@@ -212,6 +215,10 @@ int main()
         auto pb = player.getGlobalBounds();
         light.setPosition(pb.position + pb.size / 2.f);
 
+        // ================= TIMER UPDATE (FIX) =================
+        int time = clock.getElapsedTime().asSeconds();
+        timerText.setString("Time: " + std::to_string(time));
+
         // ================= DRAW =================
         window.clear();
 
@@ -221,14 +228,12 @@ int main()
         if (!hasKey)
             window.draw(key);
 
-        // walls
         window.draw(wallTop);
         window.draw(wallBottom);
         window.draw(wallLeft);
         window.draw(wallRightTop);
         window.draw(wallRightBottom);
 
-        // draw door ONLY when closed
         if (!doorOpen)
             window.draw(wallRightMiddle);
 
@@ -238,6 +243,7 @@ int main()
             window.draw(light);
         }
 
+        window.draw(timerText);
         window.display();
     }
 
