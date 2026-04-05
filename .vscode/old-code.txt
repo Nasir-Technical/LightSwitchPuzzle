@@ -1,0 +1,100 @@
+#include <SFML/Graphics.hpp>
+#include <cmath>
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600)), "Light Game");
+
+    // PLAYER
+    sf::RectangleShape player(sf::Vector2f(40, 40));
+    player.setFillColor(sf::Color::White);
+    player.setPosition(sf::Vector2f(100.f, 100.f));
+
+    float speed = 0.3f;
+
+    // Light variable
+    bool lightOn = false;
+
+    sf::RectangleShape darkness(sf::Vector2f(800.f, 600.f));
+    darkness.setFillColor(sf::Color(0, 0, 0, 220));
+
+    // Switch
+    sf::RectangleShape lightSwitch(sf::Vector2f(30.f, 30.f));
+    lightSwitch.setFillColor(sf::Color::Yellow);
+    lightSwitch.setPosition(sf::Vector2f(400.f, 300.f));
+
+    // Door
+    sf::RectangleShape door(sf::Vector2f(80.f, 150.f));
+    door.setFillColor(sf::Color::Red);
+    door.setPosition(sf::Vector2f(700.f, 225.f));
+    bool doorOpen = false;
+
+    // Obstacle
+    sf::RectangleShape obstacle(sf::Vector2f(100.f, 50.f));
+    obstacle.setFillColor(sf::Color::Green);
+    obstacle.setPosition(sf::Vector2f(300.f, 400.f));
+
+    while (window.isOpen()) {
+
+        // EVENTS
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>())
+                window.close();
+        }
+
+        // MOVEMENT (SFML 3 style)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+            player.move(sf::Vector2f(0.f, -speed));
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+            player.move(sf::Vector2f(0.f, speed));
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+            player.move(sf::Vector2f(-speed, 0.f));
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+            player.move(sf::Vector2f(speed, 0.f));
+        
+        // Distance between player and switch
+        auto distance = sqrt(
+            pow(player.getPosition().x - lightSwitch.getPosition().x, 2) +
+            pow(player.getPosition().y - lightSwitch.getPosition().y, 2)
+        );
+
+        if (distance < 50.f) // aghar player switch ka kareeb hai
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+            {
+                lightOn = !lightOn; // toggle karo light
+                if (lightOn) doorOpen = true; // light on hote he door open hoga
+            }
+            
+        }
+        
+
+        // Light toggle (test key)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+            lightOn = true;
+        }
+
+        // DRAW
+        window.clear(sf::Color::Black);
+        window.draw(player);
+
+        // LightSwitch
+        window.draw(lightSwitch);
+        if (!doorOpen)
+            window.draw(door);
+
+        // obstacles
+        if (lightOn)
+        {
+            window.draw(obstacle);
+        }
+        
+        if (!lightOn)
+            window.draw(darkness);
+        window.display();
+    }
+
+    return 0;
+}
